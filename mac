@@ -86,12 +86,6 @@ BRIGHT_CYAN="$ESC[${BRIGHT};${FG_CYAN}m"
 BRIGHT_WHITE="$ESC[${BRIGHT};${FG_WHITE}m"
 ### end common-components/colours
 
-fancy_echo "Initialize SSH ..."
-  if [ ! -d ~/.ssh/ ]; then
-    ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  fi
-### end common-components/ssh
-
 start_if_needed() {
   local grep_name="[${1:0:1}]${1:1}"
 
@@ -133,12 +127,6 @@ fancy_echo "Setting OSX settings ..."
   # Disable press-and-hold for keys in favour of key repeat.
   defaults write -g ApplePressAndHoldEnabled -bool false
 
-  # Set a really fast key repeat.
-  defaults write NSGlobalDomain KeyRepeat -int 1
-
-  # Disable auto-correct
-  defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
-
   # Screen
   #
 
@@ -174,9 +162,6 @@ fancy_echo "Setting OSX settings ..."
   defaults write com.apple.finder NewWindowTarget -string "PfDe"
   defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/"
 
-  # Finder: show hidden files by default
-  defaults write com.apple.finder AppleShowAllFiles -bool true
-
   # Finder: show all filename extensions
   defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
@@ -198,10 +183,6 @@ fancy_echo "Setting OSX settings ..."
   # Disable the warning when changing a file extension
   defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 
-  # Always open everything in Finder's column view.
-  # defaults write com.apple.Finder FXPreferredViewStyle clmv
-  defaults write com.apple.finder FXPreferredViewStyle -string "clmv"
-
   # Show the ~/Library folder.
   chflags nohidden ~/Library
 
@@ -218,19 +199,6 @@ less_fancy_echo "Restarting affected apps, some of these changes require a logou
     killall "${app}" > /dev/null 2>&1
   done
 ### end mac-components/osx
-
-fancy_echo "Installing XCode ..."
-  if [ ! $(xcode-select -p)='/Library/Developer/CommandLineTools' ]; then
-    less_fancy_echo "${BRIGHT_RED}You must manually install Xcode${RESET}"
-    less_fancy_echo 'try these commands'
-    less_fancy_echo '$ sudo xcodebuild -license'
-    less_fancy_echo '$ xcode-select --install'
-    less_fancy_echo ''
-    pause 'Press [Enter] key after Xcode has been installed'
-  else
-    less_fancy_echo '... skipping, looks like XCode is installed'
-  fi
-### end mac-components/xcode
 
 if ! which brew &>/dev/null; then
   fancy_echo "Installing Homebrew, a good OS X package manager ..."
@@ -325,9 +293,6 @@ is_brew_tap_installed() {
 fancy_echo "Installing Git, thee version control system ..."
   brew_install git
 
-fancy_echo "Installing GitHub CLI client ..."
-  brew_install hub
-
 git_clone() {
   if [ ! -d $2 ]; then
     git clone $1 $2
@@ -338,37 +303,6 @@ git_clone() {
   true
 }
 ### end mac-components/git
-
-fancy_echo "Installing Postgres, a good open source relational database ..."
-  brew_install postgres --no-python
-
-fancy_echo "Installing Redis, a good key-value database ..."
-  brew_install redis
-
-fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
-  brew_install the_silver_searcher
-
-fancy_echo "Installing vim from Homebrew to get the latest version ..."
-  brew_install "vim --override-system-vi"
-
-fancy_echo "Installing ctags, to index files for vim tab completion of methods, classes, variables ..."
-  brew_install ctags
-
-fancy_echo "Installing tmux, to save project state and switch between projects ..."
-  brew_install tmux
-
-fancy_echo "Installing reattach-to-user-namespace, for copy-paste and RubyMotion compatibility with tmux ..."
-  brew_install reattach-to-user-namespace
-
-fancy_echo "Installing Bash Completion, for better bash completion ..."
-  brew_install bash-completion
-
-fancy_echo "Installing QT, used by Capybara Webkit for headless Javascript integration testing ..."
-  brew_install qt
-
-fancy_echo "Installing tig, text-mode interface to git..."
-  brew_install tig
-### end mac-components/packages
 
 fancy_echo "Installing Brew Cask, to install OSX binaries ..."
   brew_install_or_upgrade caskroom/cask/brew-cask
@@ -420,36 +354,15 @@ fancy_echo "Installing Google Drive, for sharing more files ..."
 fancy_echo "Installing Textmate, for a good scratch pad ..."
   brew_cask_install textmate
 
-fancy_echo "Installing Gitx (rownaj fork), in case you forget about 'git add -p' ..."
-  brew_cask_install gitx-rowanj
-
 fancy_echo "Installing Day-O, a better menu bar clock + calendar ..."
   brew_cask_install day-o
 
 fancy_echo "Installing F-lux, to save your eyes ..."
   brew_cask_install flux
 
-fancy_echo "Installing iTerm2, almost forgot ..."
-  brew_cask_install iterm2
-  # set up file extension associations, for auto-installing themes
-  start_if_needed iTerm
-
-fancy_echo "Installing Macvim, of course, what took so long ..."
-  brew_cask_install macvim
-
 fancy_echo "Linking Alfred, so that it sees casks ..."
   brew_cask_link alfred
 ### end mac-components/casks
-
-fancy_echo "Tapping Brew Cask Fonts, to allow easy install of fonts ..."
-  brew_tap caskroom/fonts
-
-fancy_echo "Installing Font inconsolata-dz, ohhh, pretty ..."
-  brew_cask_install font-inconsolata-dz
-
-fancy_echo "Installing Font source-code-pro, not bad ..."
-  brew_cask_install font-source-code-pro
-### end mac-components/fonts
 
 fancy_echo "Installing wget, because sometimes you need a little wget ..."
   brew_install wget
@@ -461,98 +374,7 @@ if [ ! -d /Applications/ShiftIt.app ]; then
     rm ShiftIt.zip
     mv ShiftIt.app /Applications/
 fi
-
-fancy_echo "Downloading Solarized, for iTerm colours ..."
-  if [ ! -d ~/Applications/solarized ]; then
-    wget http://ethanschoonover.com/solarized/files/solarized.zip
-    unzip -q solarized.zip
-    rm solarized.zip
-    mv solarized ~/Applications/
-  fi
-
-fancy_echo "Installing Solarized Dark Theme for Terminal ..."
-  if [ -s ~/Library/Preferences/com.apple.Terminal.plist ]; then
-    if grep -q 'Solarized Dark' ~/Library/Preferences/com.apple.Terminal.plist; then
-      echo "... skipping theme install, already installed"
-    else
-      open ~/Applications/solarized/osx-terminal.app-colors-solarized/Solarized\ Dark\ ansi.terminal
-      sleep 1
-      defaults write com.apple.terminal "Default Window Settings" -string "Solarized Dark ansi"
-      defaults write com.apple.terminal "Startup Window Settings" -string "Solarized Dark ansi"
-    fi
-  else
-    echo "... skipping theme install, Terminal not installed"
-  fi
-
-fancy_echo "Installing Solarized Dark Theme for iTerm ..."
-  if [ -s ~/Library/Preferences/com.googlecode.iterm2.plist ]; then
-    if grep -q 'Solarized Dark' ~/Library/Preferences/com.googlecode.iterm2.plist; then
-      echo "... skipping theme install, already installed"
-    else
-      open ~/Applications/solarized/iterm2-colors-solarized/Solarized\ Dark.itermcolors
-    fi
-  else
-    echo "... skipping theme install, iTerm 2 not installed"
-  fi
 ### end mac-components/downloads
-
-fancy_echo "Installing chruby, to change Ruby versions ..."
-  brew_install chruby
-  source /usr/local/share/chruby/chruby.sh
-  source /usr/local/share/chruby/auto.sh
-
-fancy_echo "Installing ruby-install, to install Rubies ..."
-  brew_install_or_upgrade ruby-install
-
-is_ruby_version_installed() {
-  chruby | grep -q "ruby-$1"
-}
-
-ruby_install() {
-  if is_ruby_version_installed $1; then
-    less_fancy_echo "... skipping ruby $1, already installed"
-  else
-    ruby-install ruby $1
-  fi
-
-  source /usr/local/share/chruby/chruby.sh
-
-  true
-}
-### end mac-components/chruby
-
-ruby_version="2.1.2"
-
-fancy_echo "Installing Ruby $ruby_version ..."
-  ruby_install "$ruby_version"
-
-fancy_echo "Setting $ruby_version as global default Ruby ..."
-  chruby $ruby_version
-  echo "ruby-$ruby_version" > ~/.ruby-version
-
-fancy_echo "Updating to latest Rubygems version ..."
-  gem update --system
-
-fancy_echo "Installing Bundler to install project-specific Ruby gems ..."
-  gem install bundler --no-document --pre
-### end common-components/ruby-environment
-
-fancy_echo "Configuring Bundler for faster, parallel gem installation ..."
-  number_of_cores=$(sysctl -n hw.ncpu)
-  bundle config --global jobs $((number_of_cores - 1))
-### end mac-components/bundler
-
-fancy_echo "Installing Heroku CLI client ..."
-  brew_install heroku-toolbelt
-
-fancy_echo "Installing the heroku-config plugin to pull config variables locally to be used as ENV variables ..."
-  heroku plugins:install git://github.com/ddollar/heroku-config.git
-### end mac-components/heroku
-
-fancy_echo "Installing thoughbot rcm, to manage your dotfiles ..."
-  brew_tap thoughtbot/formulae
-  brew_install rcm
-### end mac-components/rcm
 
 fancy_echo "Starting Postgres ..."
   # brew_start postgres
@@ -579,14 +401,6 @@ fancy_echo "Cleaning up Brew Cask ..."
 
 fancy_echo "Creating workspace ..."
   mkdir -p ~/workspace
-
-fancy_echo "Cloning Dotfiles ..."
-  git_clone https://github.com/attack/dotfiles.git ~/workspace/dotfiles
-  git_clone https://github.com/attack/vim-bootstrap.git ~/workspace/vim-bootstrap
-
-fancy_echo "Symlinking Dotfiles ..."
-  rcup -v -d ~/workspace/dotfiles -x README.md -x Brewfile -x install -x LICENSE -x tags
-  rcup -v -d ~/workspace/vim-bootstrap -x README.md -x Brewfile -x install -x LICENSE -x tags
 ### end common-components/dotfiles
 
 fancy_echo "Installing your shared additions from ~/.laptop.shared ..."
@@ -608,12 +422,7 @@ less_fancy_echo ""
 less_fancy_echo "   ${YELLOW}**** USING SYSTEM PREFERENCES${RESET}"
 less_fancy_echo " - allow apps downloaded from Anywhere (see Security & Privacy > General)"
 less_fancy_echo " - allow ShiftIt Accessibility access (see Security & Privacy > Privacy > Accessibility)"
-less_fancy_echo " - map caps lock to ctrl (see Keyboard > Keyboard > Modifier Keys)"
 less_fancy_echo " - hide date/time in menu bar (see Date & Time > Clock)"
-less_fancy_echo ""
-less_fancy_echo "   ${YELLOW}**** USING SPECIFIC APPS${RESET}"
-less_fancy_echo " - use solarized for Terminal. Theme was installed, just make it default"
-less_fancy_echo " - use solarized for iTerm2. Theme was installed, just apply it"
 less_fancy_echo ""
 ### end mac-components/todo
 

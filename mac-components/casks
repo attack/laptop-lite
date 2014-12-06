@@ -48,22 +48,11 @@ fancy_echo "Installing Google Drive, for sharing more files ..."
 fancy_echo "Installing Textmate, for a good scratch pad ..."
   brew_cask_install textmate
 
-fancy_echo "Installing Gitx (rownaj fork), in case you forget about 'git add -p' ..."
-  brew_cask_install gitx-rowanj
-
 fancy_echo "Installing Day-O, a better menu bar clock + calendar ..."
   brew_cask_install day-o
 
 fancy_echo "Installing F-lux, to save your eyes ..."
   brew_cask_install flux
-
-fancy_echo "Installing iTerm2, almost forgot ..."
-  brew_cask_install iterm2
-  # set up file extension associations, for auto-installing themes
-  start_if_needed iTerm
-
-fancy_echo "Installing Macvim, of course, what took so long ..."
-  brew_cask_install macvim
 
 fancy_echo "Linking Alfred, so that it sees casks ..."
   brew_cask_link alfred
